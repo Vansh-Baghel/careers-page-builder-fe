@@ -1,5 +1,6 @@
 import { Job } from "@/lib/types";
 import { Button } from "../ui/button";
+import { useState } from "react";
 
 type Props = {
   job: Job;
@@ -14,7 +15,8 @@ export function JobCard({ job, onEdit, onDelete }: Props) {
       <p className="text-sm text-gray-600">{job.location}</p>
 
       <p className="text-xs text-gray-400 mt-1 capitalize">
-        {job.experience_level} • {job.employment_type} • {job.work_policy} • {job.job_type}
+        {job.experience_level} • {job.employment_type} • {job.work_policy} •{" "}
+        {job.job_type}
       </p>
 
       <div className="flex gap-2 mt-4">

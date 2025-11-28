@@ -2,7 +2,7 @@
 
 import { deleteJob, getJobs } from "@/lib/apis";
 import { Job, JobFiltersType } from "@/lib/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -10,11 +10,19 @@ import { Button } from "../ui/button";
 import { JobCard } from "./jobCard";
 import { JobFilters } from "./jobFilters";
 import { PreviewView } from "./previewView";
+import { DeleteJobDialog } from "../modals/deleteJobModal";
 
 export default function PublishPageContent() {
   const { companySlug } = useParams<{ companySlug: string }>();
   const router = useRouter();
   const [filters, setFilters] = useState<JobFiltersType>({});
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    jobSlug: "",
+    title: "",
+  });
+
+  const queryClient = useQueryClient();
 
   const { data: jobsData, isLoading } = useQuery({
     queryKey: ["jobs", companySlug],
@@ -47,22 +55,28 @@ export default function PublishPageContent() {
     setFilters(filters);
   };
 
-  const { mutate, isPending } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: deleteJob,
     onSuccess: () => {
       toast.success("Job deleted");
-      router.refresh();
+      queryClient.invalidateQueries({ queryKey: ["jobs", companySlug] });
     },
     onError: () => {
       toast.error("Failed to delete the job");
     },
   });
 
-  const handleDeleteOnClickHandler = async (jobSlug: string) => {
-    const ok = confirm("Delete this job?");
-    if (!ok) return;
+  const handleDeleteOnClickHandler = (jobSlug: string) => {
+    setDeleteModal({
+      open: true,
+      jobSlug,
+      title: "Are you sure you want to delete this job?",
+    });
+  };
 
-    mutate({ companySlug, jobSlug });
+  const confirmDelete = () => {
+    mutate({ companySlug, jobSlug: deleteModal.jobSlug });
+    setDeleteModal({ open: false, jobSlug: "", title: "" });
   };
 
   return (
@@ -97,6 +111,13 @@ export default function PublishPageContent() {
           Add Job
         </Button>
       </div>
+
+      <DeleteJobDialog
+        open={deleteModal.open}
+        jobTitle={deleteModal.title}
+        onClose={() => setDeleteModal({ open: false, jobSlug: "", title: "" })}
+        onConfirm={confirmDelete}
+      />
     </main>
   );
 }

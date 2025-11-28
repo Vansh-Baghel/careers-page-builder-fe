@@ -25,7 +25,7 @@ export type Job = {
   department: string;
   employment_type: EmploymentType;
   experience_level: ExperienceLevel;
-  job_type: WorkPolicy;
+  job_type: JobType;
   salary_range: string;
   job_slug: string;
   posted_days_ago?: number;
