@@ -1,91 +1,114 @@
 "use client";
 
-import { deleteJob, getJobs, getPublishedCompanyData } from "@/lib/apis";
+import { deleteJob, getJobs } from "@/lib/apis";
 import { Job, JobFiltersType } from "@/lib/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DeleteJobDialog } from "../../modals/deleteJobModal";
 import { Button } from "../../ui/button";
-import { JobCard } from "../reusableComponents/jobCard";
 import { JobFilters } from "../jobFilters";
-import Pagination from "../reusableComponents/pagination";
-import { PreviewView } from "./previewView";
+import { JobCard } from "../reusableComponents/jobCard";
 
 export default function EditJobsContent() {
   const { companySlug } = useParams<{ companySlug: string }>();
   const router = useRouter();
-  const [page, setPage] = useState(1);
+  const queryClient = useQueryClient();
+
   const limit = 10;
 
-  const [filters, setFilters] = useState<JobFiltersType>({});
+  const [filters, setFilters] = useState<JobFiltersType>({
+    employment_type: "all",
+    experience_level: "all",
+    work_policy: "all",
+    job_type: "all",
+  });
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     jobSlug: "",
     title: "",
   });
 
-  const queryClient = useQueryClient();
-
-  // ---------- FETCH COMPANY DATA ----------
-  const { data: publishedCompanyData, isLoading: loadingPublishedData } =
-    useQuery({
-      queryKey: [`publishedCompanyData-${companySlug}`, companySlug],
-      queryFn: () =>
-        getPublishedCompanyData(companySlug).then((res) => res.data),
+  // ---- Infinite Query ----
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["jobs-infinite", companySlug],
+      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        getJobs(companySlug, pageParam, limit).then((res) => res.data),
+      getNextPageParam: (lastPage) => lastPage.pagination.nextPage,
     });
 
-  // ---------- FETCH PAGINATED JOBS ----------
-  const {
-    data: jobsData,
-    isLoading,
-    isFetching,
-  } = useQuery({
-    queryKey: ["jobs", companySlug, page, limit],
-    queryFn: () => getJobs(companySlug, page, limit).then((res) => res.data),
-  });
+  // ---- Flatten Pages ----
+  const allJobs: Job[] = useMemo(() => {
+    return data?.pages.flatMap((p: { jobs: Job[] }) => p.jobs) ?? [];
+  }, [data]);
 
-  // ---------- FILTER JOBS LOCALLY ----------
+  // ---- Local Filters on Infinite Data ----
   const filteredJobs = useMemo(() => {
-    if (!jobsData?.jobs) return [];
-
-    return jobsData.jobs.filter((job: Job) => {
+    return allJobs.filter((job: Job) => {
       if (
-        filters.employment_type &&
+        filters.employment_type !== "all" &&
         job.employment_type !== filters.employment_type
       )
         return false;
 
       if (
-        filters.experience_level &&
+        filters.experience_level !== "all" &&
         job.experience_level !== filters.experience_level
       )
         return false;
 
-      if (filters.job_type && job.job_type !== filters.job_type) return false;
+      if (filters.job_type !== "all" && job.job_type !== filters.job_type)
+        return false;
+
+      if (
+        filters.work_policy !== "all" &&
+        job.work_policy !== filters.work_policy
+      )
+        return false;
 
       return true;
     });
-  }, [jobsData, filters]);
+  }, [allJobs, filters]);
 
-  const handleFilter = (filters: JobFiltersType) => {
-    setFilters(filters);
-  };
+  // ---- Intersection Observer (load more) ----
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // ---------- DELETE JOB ----------
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, fetchNextPage]);
+
+  // ---- DELETE JOB ----
   const { mutate } = useMutation({
     mutationFn: deleteJob,
     onSuccess: () => {
       toast.success("Job deleted");
-      queryClient.invalidateQueries({ queryKey: ["jobs", companySlug] });
+      queryClient.invalidateQueries({
+        queryKey: ["jobs-infinite", companySlug],
+      });
     },
-    onError: () => {
-      toast.error("Failed to delete the job");
-    },
+    onError: () => toast.error("Failed to delete the job"),
   });
 
-  const handleDeleteOnClickHandler = (jobSlug: string) => {
+  const handleDeleteOnClick = (jobSlug: string) => {
     setDeleteModal({
       open: true,
       jobSlug,
@@ -103,28 +126,23 @@ export default function EditJobsContent() {
       <h1 className="text-2xl font-semibold">Jobs</h1>
 
       <div className="flex justify-between items-center">
-        <JobFilters onFilter={handleFilter} />
+        <JobFilters filters={filters} onChange={setFilters} />
 
-        <div className="flex justify-end">
-          <Button
-            onClick={() => router.push(`/${companySlug}/add-job`)}
-          >
-            Add Job
-          </Button>
-        </div>
+        <Button onClick={() => router.push(`/${companySlug}/add-job`)}>
+          Add Job
+        </Button>
       </div>
 
-      {isLoading || isFetching ? (
-        <p>Loading jobs...</p>
-      ) : filteredJobs.length === 0 ? (
-        <p>No jobs found.</p>
+      {/* Job List */}
+      {filteredJobs.length === 0 ? (
+        <p className="text-gray-500">No jobs found.</p>
       ) : (
         <div className="space-y-4">
           {filteredJobs.map((job: Job) => (
             <JobCard
               key={job.id}
               job={job}
-              onDelete={() => handleDeleteOnClickHandler(job.job_slug)}
+              onDelete={() => handleDeleteOnClick(job.job_slug)}
               onEdit={() =>
                 router.push(`/${companySlug}/edit-job/${job.job_slug}`)
               }
@@ -133,19 +151,14 @@ export default function EditJobsContent() {
         </div>
       )}
 
-      {jobsData && (
-        <div className="pt-4">
-          <p className="text-sm text-gray-500">
-            Showing {filteredJobs.length} of {jobsData.totalJobs} jobs
-          </p>
-
-          <Pagination
-            currentPage={jobsData.pagination.currentPage}
-            totalPages={jobsData.pagination.totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
-        </div>
-      )}
+      {/* Infinite Scroll Trigger */}
+      <div ref={loadMoreRef} className="h-12 flex items-center justify-center">
+        {isFetchingNextPage
+          ? "Loading more jobs..."
+          : hasNextPage
+          ? "Scroll to load more"
+          : "No more jobs"}
+      </div>
 
       <DeleteJobDialog
         open={deleteModal.open}

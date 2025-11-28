@@ -68,13 +68,13 @@ export type Brand = {
   culture_video_public_id?: string;
 };
 
-export type EmploymentType = "full_time" | "part_time" | "contract";
+export type EmploymentType = "all" | "full_time" | "part_time" | "contract";
 
-export type ExperienceLevel = "junior" | "mid" | "senior";
+export type ExperienceLevel = "all" | "junior" | "mid" | "senior";
 
-export type WorkPolicy = "remote" | "hybrid" | "onsite";
+export type WorkPolicy = "all" | "remote" | "hybrid" | "onsite";
 
-export type JobType = "permanent" | "temporary" | "internship";
+export type JobType = "all" | "permanent" | "temporary" | "internship";
 
 export type JobFiltersType = {
   employment_type?: EmploymentType;

@@ -6,6 +6,7 @@ import Image from "next/image";
 
 export function PreviewView({ company, isLoading }: { company: CompanyPublic, isLoading: boolean }) {
   if (isLoading) return <p>Loading…</p>;
+
   const renderSection = (s: CompanySection, idx: number) => (
     <Card key={idx}>
       <CardHeader>

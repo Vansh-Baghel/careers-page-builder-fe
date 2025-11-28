@@ -100,10 +100,14 @@ export async function getSingleJob({
 }
 
 export async function getPublishedCompanyData(companySlug: string) {
-  return await axios.get(`/company/${companySlug}/published`);
+  return await axios.get(`/company/${companySlug}/get-published`);
 }
 
-export async function getJobs(companySlug: string, page: number, limit: number) {
+export async function getJobs(
+  companySlug: string,
+  page: number,
+  limit: number
+) {
   return await axios.get(`/${companySlug}/jobs?page=${page}&limit=${limit}`);
 }
 
@@ -186,5 +190,5 @@ export async function editJob({
 }
 
 export const publishCompany = ({ companySlug }: { companySlug: string }) => {
-  return axios.post(`/publish/${companySlug}`);
+  return axios.patch(`/publish/${companySlug}`);
 };

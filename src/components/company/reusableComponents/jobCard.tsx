@@ -15,7 +15,7 @@ export function JobCard({ job, onEdit, onDelete }: Props) {
       <p className="text-sm text-gray-600">{job.location}</p>
 
       <p className="text-xs text-gray-400 mt-1 capitalize">
-        {job.experience_level} • {job.employment_type} • {job.work_policy} •{" "}
+        {job.experience_level} • {job.employment_type.split("_").join("-")} • {job.work_policy} •{" "}
         {job.job_type}
       </p>
 
