@@ -1,40 +1,42 @@
 "use client";
 
-import { CompanySection } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CompanySection } from "@/lib/types";
 
 type Props = {
   sections: CompanySection[];
-  onChange: (sections: CompanySection[]) => void;
+  setSections: (sections: CompanySection[]) => void;
 };
 
-/** 🔹 Template: all sections only get `description` */
-const defaults: Record<CompanySection["type"], CompanySection> = {
+const defaults: Partial<Record<CompanySection["type"], CompanySection>> = {
   hero: { type: "hero", description: "Welcome to Our Team" },
   about: { type: "about", description: "Describe this section…" },
   benefits: { type: "benefits", description: "Describe this section…" },
-  // jobs: { type: "jobs", description: "Describe this section…" },
+  // jobs optional → no default
 };
 
-export function SectionsEditor({ sections, onChange }: Props) {
+export function SectionsEditor({ sections, setSections }: Props) {
   /** ➕ Add section */
   const addSection = (type: CompanySection["type"]) => {
-    onChange([...sections, defaults[type]]);
+    const template = defaults[type];
+    if (!template) return; // safety check
+
+    setSections([...sections, template]);
   };
 
   /** ✏️ Edit description */
   const updateSection = (index: number, value: Partial<CompanySection>) => {
     const next = [...sections];
     next[index] = { ...next[index], ...value };
-    onChange(next);
+    setSections(next);
   };
 
   /** 🗑 Remove */
   const removeSection = (index: number) => {
     const next = [...sections];
     next.splice(index, 1);
-    onChange(next);
+    setSections(next);
   };
 
   /** 🔀 Reorder */
@@ -43,23 +45,21 @@ export function SectionsEditor({ sections, onChange }: Props) {
     const target = index + dir;
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
+    setSections(next);
   };
 
-  /** 🧱 Render editor — same for all types now */
   const renderEditor = (section: CompanySection, idx: number) => (
     <Textarea
       placeholder="Write here…"
       value={section.description ?? ""}
-      onChange={(e) =>
-        updateSection(idx, { description: e.target.value })
-      }
+      onChange={(e) => updateSection(idx, { description: e.target.value })}
     />
   );
 
   /** 🚫 Show only buttons for sections that DO NOT exist */
-  const remainingTypes = (["hero", "about", "benefits"] as CompanySection["type"][])
-    .filter((t) => !sections.some((sec) => sec.type === t));
+  const remainingTypes = (
+    ["hero", "about", "benefits"] as CompanySection["type"][]
+  ).filter((t) => !sections.some((sec) => sec.type === t));
 
   return (
     <div className="space-y-4">
@@ -68,13 +68,25 @@ export function SectionsEditor({ sections, onChange }: Props) {
           <div className="flex items-center justify-between">
             <p className="font-semibold capitalize">{section.type}</p>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => moveSection(idx, -1)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => moveSection(idx, -1)}
+              >
                 ↑
               </Button>
-              <Button variant="outline" size="icon" onClick={() => moveSection(idx, 1)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => moveSection(idx, 1)}
+              >
                 ↓
               </Button>
-              <Button variant="destructive" size="icon" onClick={() => removeSection(idx)}>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => removeSection(idx)}
+              >
                 ✕
               </Button>
             </div>

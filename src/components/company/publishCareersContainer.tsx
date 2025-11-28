@@ -5,9 +5,9 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { CareersJobsList } from "@/components/company/careersJobsList";
 import { getPublicCompany } from "@/lib/apis";
-import { CareersSections } from "./careersSections";
+import { PublishCareersSections } from "./publishCareersSections";
 
-export default function CareersContainer() {
+export default function PublishCareersContainer() {
   const { companySlug } = useParams<{ companySlug: string }>();
 
   const fetchPublicCompany = async () => {
@@ -77,7 +77,7 @@ export default function CareersContainer() {
       </section>
 
       {/* Sections */}
-      {sections && sections.length > 0 && <CareersSections sections={sections} />}
+      {sections && sections.length > 0 && <PublishCareersSections sections={sections} />}
 
       {/* Jobs */}
       <CareersJobsList jobs={jobs} />

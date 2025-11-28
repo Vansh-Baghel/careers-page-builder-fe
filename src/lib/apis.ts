@@ -33,12 +33,8 @@ export const login = ({
   return axios.post("/auth/login", { email, password });
 };
 
-export const getCompanyPreview = (companySlug: string) => {
-  return axios.get(`/company/${companySlug}/preview`);
-};
-
-export const saveCompanyDraft = ({
-  draft_sections,
+export const saveCompanyPreview = ({
+  sections,
   logo_url,
   logo_public_id,
   banner_url,
@@ -48,7 +44,7 @@ export const saveCompanyDraft = ({
   culture_video_public_id,
   companySlug,
 }: {
-  draft_sections?: CompanySection[];
+  sections?: CompanySection[];
   logo_url?: string;
   logo_public_id?: string;
   banner_url?: string;
@@ -59,7 +55,7 @@ export const saveCompanyDraft = ({
   companySlug: string;
 }) => {
   return axios.patch(`/company/${companySlug}/edit`, {
-    draft_sections,
+    sections,
     logo_url,
     logo_public_id,
     banner_url,
@@ -70,6 +66,10 @@ export const saveCompanyDraft = ({
   });
 };
 
+export async function getPreview(slug: string) {
+  return await axios.get(`/company/${slug}/preview`);
+}
+
 export async function getPublicCompany(slug: string) {
   return await axios.get(`/company/public/${slug}/careers`);
 }
@@ -79,8 +79,12 @@ export async function uploadLogoOrBanner(
   field: string,
   form: FormData
 ) {
-  const res = await axios.post(`/file-upload/upload/${companySlug}/${field}`, form, {
+  const res = await axios.post(`/file-upload/${companySlug}/${field}`, form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return res.data.url;
+
+  return {
+    url: res.data.url,
+    public_id: res.data.public_id,
+  };
 }

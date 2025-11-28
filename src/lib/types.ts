@@ -11,15 +11,14 @@ export type CompanySection =
       type: "benefits";
       description: string;
     }
-  // | {
-  //     type: "jobs";
-  //     heading?: string;
-  //     description: string;
-  //   };
+  | {
+      type: "jobs";
+      heading?: string;
+      description: string;
+    };
 
 export type Job = {
-  id: string;
-  companyId: string; // we store ID for frontend usage
+  id?: string;
   title: string;
   work_policy: "remote" | "hybrid" | "onsite";
   location: string;
@@ -28,11 +27,7 @@ export type Job = {
   experience_level: "junior" | "mid" | "senior";
   job_type: "permanent" | "contract";
   salary_range: string;
-  job_slug: string;
-  posted_days_ago: number;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
+  posted_days_ago?: number;
 };
 
 export type CompanyPublic = {
@@ -47,7 +42,13 @@ export type CompanyPublic = {
 
 export type Brand = {
   logo_url?: string;
+  logo_public_id?: string;
+
   banner_url?: string;
+  banner_public_id?: string;
+
   brand_color?: string;
+
   culture_video_url?: string;
+  culture_video_public_id?: string;
 };

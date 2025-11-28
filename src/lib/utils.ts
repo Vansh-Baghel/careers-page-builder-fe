@@ -10,7 +10,7 @@ export async function uploadToCloudinary(
   file: File,
   companySlug: string,
   field: string
-): Promise<string> {
+): Promise<{ url: string; public_id: string }> {
   const form = new FormData();
   form.append("file", file);
 

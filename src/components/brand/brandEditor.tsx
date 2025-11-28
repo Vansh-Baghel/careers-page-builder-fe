@@ -4,26 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/lib/types";
 import { uploadToCloudinary } from "@/lib/utils";
-import Image from "next/image";
+import { Check } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 type Props = {
   brand: Brand;
-  onChange: (updated: Partial<Props["brand"]>) => void;
+  onChange: (updated: Partial<Brand>) => void;
 };
 
+function UploadedTick({ ok }: { ok: boolean }) {
+  return (
+    <span className={`text-sm ${ok ? "text-green-600" : "text-gray-400"}`}>
+      {ok && <Check size={16} />}
+    </span>
+  );
+}
+
 export function BrandEditor({ brand, onChange }: Props) {
-  const [localBrand, setLocalBrand] = useState(brand);
   const { companySlug } = useParams() as { companySlug: string };
 
-  useEffect(() => {
-    setLocalBrand(brand);
-  }, [brand]);
-
   const setValue = (field: keyof Brand, value: string) => {
-    setLocalBrand((prev) => ({ ...prev, [field]: value }));
     onChange({ [field]: value });
   };
 
@@ -31,82 +33,102 @@ export function BrandEditor({ brand, onChange }: Props) {
     if (!file) return;
 
     try {
-      const url = await uploadToCloudinary(file, companySlug, field);
-      setValue(field, url);
-      toast.success("Uploaded successfully");
-    } catch (err) {
-      toast.error("Failed to upload file");
-      console.error(err);
+      const { url, public_id } = await uploadToCloudinary(
+        file,
+        companySlug,
+        field
+      );
+
+      const publicIdField = field.replace("_url", "_public_id") as keyof Brand;
+
+      onChange({
+        [field]: url,
+        [publicIdField]: public_id,
+      });
+
+      toast.success("Uploaded");
+    } catch {
+      toast.error("Upload failed");
     }
   };
 
   return (
-    <div className="space-y-6 border p-6 rounded-lg bg-white shadow-sm">
-      {/* LOGO UPLOAD */}
-      <div>
-        <Label className="mb-2 block font-semibold">Logo</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleUpload("logo_url", e.target.files?.[0])}
-        />
-        {localBrand?.logo_url && (
-          <Image
-            src={localBrand.logo_url}
-            width={96}
-            height={96}
-            alt="Company Logo"
-            className="w-24 h-24 object-contain mt-3 border rounded-lg"
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border p-5 rounded-lg bg-white shadow-sm">
+      
+      {/* Logo */}
+      <div className="space-y-2">
+        <Label className="font-medium">Logo</Label>
+
+        <div className="flex items-center gap-2">
+          {/* Hidden input */}
+          <input
+            id="logo-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleUpload("logo_url", e.target.files?.[0])}
           />
-        )}
+
+          {/* Custom button */}
+          <label
+            htmlFor="logo-upload"
+            className="cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50"
+          >
+            {brand.logo_url ? "File uploaded" : "Upload Logo"}
+          </label>
+
+          <UploadedTick ok={!!brand.logo_url} />
+        </div>
       </div>
 
-      {/* BANNER UPLOAD */}
-      <div>
-        <Label className="mb-2 block font-semibold">Banner Image</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleUpload("banner_url", e.target.files?.[0])}
-        />
-        {localBrand?.banner_url && (
-          <Image
-            src={localBrand.banner_url}
-            alt="Company Banner"
-            width={600}
-            height={144}
-            className="w-full h-36 object-cover mt-3 border rounded-lg"
+      {/* Banner */}
+      <div className="space-y-2">
+        <Label className="font-medium">Banner Image</Label>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="banner-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleUpload("banner_url", e.target.files?.[0])}
           />
-        )}
+
+          <label
+            htmlFor="banner-upload"
+            className="cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50"
+          >
+            {brand.banner_url ? "File uploaded" : "Upload Banner"}
+          </label>
+
+          <UploadedTick ok={!!brand.banner_url} />
+        </div>
       </div>
 
-      {/* BRAND COLOR PICKER */}
-      <div>
-        <Label className="mb-2 block font-semibold">Brand Color</Label>
+      {/* Brand Color */}
+      <div className="space-y-2">
+        <Label className="font-medium">Brand Color</Label>
         <Input
           type="color"
-          value={localBrand?.brand_color ?? "#000000"}
+          value={brand.brand_color || "#000000"}
           onChange={(e) => setValue("brand_color", e.target.value)}
-          className="h-12 p-1 cursor-pointer"
+          className="h-10 cursor-pointer"
         />
       </div>
 
-      {/* CULTURE VIDEO URL */}
-      <div>
-        <Label className="mb-2 block font-semibold">Culture Video URL</Label>
-        <Input
-          type="text"
-          placeholder="YouTube / Vimeo URL"
-          value={localBrand?.culture_video_url ?? ""}
-          onChange={(e) => setValue("culture_video_url", e.target.value)}
-        />
-        {localBrand?.culture_video_url && (
-          <iframe
-            src={localBrand.culture_video_url}
-            className="mt-3 w-full h-48 rounded-lg border"
-            allowFullScreen
+      {/* Culture Video */}
+      <div className="space-y-2">
+        <Label className="font-medium">Culture Video</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            placeholder="YouTube URL"
+            value={brand.culture_video_url || ""}
+            onChange={(e) => setValue("culture_video_url", e.target.value)}
+            className="text-sm"
           />
-        )}
+          <UploadedTick ok={!!brand.culture_video_url} />
+        </div>
       </div>
     </div>
   );

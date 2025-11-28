@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUp } from "@/lib/apis";
 import { saveTokenToLocalStorage } from "@/lib/utils";
+import { useEditorStore } from "@/store/editor";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
@@ -25,13 +26,15 @@ type SignupFormValues = z.infer<typeof schema>;
 
 export function SignupForm() {
   const router = useRouter();
+  const { setCompanyName } = useEditorStore();
 
   const { mutate, isPending } = useMutation({
     mutationFn: signUp,
     onSuccess: (res) => {
-      const { token, company_slug } = res.data;
+      const { token, company_slug, company_name } = res.data;
 
       saveTokenToLocalStorage(token);
+      setCompanyName(company_name);
       toast.success("Account created!");
 
       router.push(`/${company_slug}/edit`);
@@ -49,6 +52,7 @@ export function SignupForm() {
 
   const onSubmit = async (data: SignupFormValues) => {
     mutate(data);
+    
   };
 
   return (
