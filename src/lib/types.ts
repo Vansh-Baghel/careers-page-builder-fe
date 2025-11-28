@@ -72,3 +72,13 @@ export type JobFiltersType = {
   work_policy?: WorkPolicy;
   job_type?: JobType;
 }
+
+export type CompanyCareerType = {
+  id: string;
+  name: string;
+  slug: string;
+  published_logo_url: string | null;
+  published_banner_url: string | null;
+  published_brand_color: string | null;
+  jobs_count: number;
+};

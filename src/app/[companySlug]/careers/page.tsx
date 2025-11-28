@@ -1,5 +1,5 @@
-import CareersContainer from "@/components/company/publishCareersContainer";
+import PublishCareersContainer from "@/components/company/publishCareersContainer";
 
 export default function CareersPage() {
-  return <CareersContainer />;
+  return <PublishCareersContainer />;
 }

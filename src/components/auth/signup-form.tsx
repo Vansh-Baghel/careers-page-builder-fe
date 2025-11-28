@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUp } from "@/lib/apis";
-import { saveTokenToLocalStorage } from "@/lib/utils";
+import { saveToLocalStorage } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
@@ -29,12 +29,14 @@ export function SignupForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: signUp,
     onSuccess: (res) => {
-      const { token, company_slug, company_name } = res.data;
+      const { token, user } = res.data;
 
-      saveTokenToLocalStorage(token);
+      saveToLocalStorage("token", token);
+      saveToLocalStorage("user", JSON.stringify(user));
+      
       toast.success("Account created!");
 
-      router.push(`/${company_slug}/edit`);
+      router.push(`/${user.company_slug}/edit`);
     },
     onError: () => {
       toast.error("Failed to sign up");

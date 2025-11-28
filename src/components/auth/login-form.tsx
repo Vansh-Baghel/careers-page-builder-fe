@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/apis";
-import { saveTokenToLocalStorage } from "@/lib/utils";
+import { saveToLocalStorage } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -32,9 +32,10 @@ export function LoginForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: login,
     onSuccess: (res) => {
-      const { token, company_slug, company_name } = res.data;
-      saveTokenToLocalStorage(token);
-      router.push(`/${company_slug}/edit`);
+      const { token, user } = res.data;
+      saveToLocalStorage("token", token);
+      saveToLocalStorage("user", JSON.stringify(user));
+      router.push(`/${user.company_slug}/edit`);
     },
     onError: () => {
       toast.error("Failed to log in");

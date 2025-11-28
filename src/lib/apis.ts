@@ -89,6 +89,10 @@ export async function uploadLogoOrBanner(
   };
 }
 
+export async function getAllCompanies() {
+  return await axios.get(`/companies`);
+}
+
 export async function getSingleJob({
   companySlug,
   jobSlug,
@@ -99,8 +103,8 @@ export async function getSingleJob({
   return await axios.get(`/${companySlug}/job/${jobSlug}`);
 }
 
-export async function getJobs(slug: string) {
-  return await axios.get(`/${slug}/jobs`);
+export async function getJobs(companySlug: string) {
+  return await axios.get(`/${companySlug}/jobs`);
 }
 
 export async function createJob({
@@ -180,3 +184,4 @@ export async function editJob({
     salary_range,
   });
 }
+

@@ -17,14 +17,14 @@ export async function uploadToCloudinary(
   return uploadLogoOrBanner(companySlug, field, form);
 }
 
-export const saveTokenToLocalStorage = (value: string) => {
+export const saveToLocalStorage = (key: string, value: string) => {
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(() => {
-      localStorage.setItem("token", value);
+      localStorage.setItem(key, value);
     });
   } else {
     setTimeout(() => {
-      localStorage.setItem("token", value);
+      localStorage.setItem(key, value);
     }, 0);
   }
 };
