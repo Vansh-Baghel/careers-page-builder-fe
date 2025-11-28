@@ -1,8 +1,8 @@
 "use client";
 
-import { PreviewView } from "@/components/company/previewView";
+import { PreviewView } from "@/components/company/protected/previewView";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { deleteJob, getPreview, publishCompany } from "@/lib/apis";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ export default function PreviewPageContent() {
 
   const publishOnClickHandler = () => {
     mutate({ companySlug });
-    router.push(`/${companySlug}/publish`);
+    router.push(`/careers/${companySlug}`);
   };
 
   return (
@@ -39,7 +39,7 @@ export default function PreviewPageContent() {
         <div className="flex items-center gap-2">
           <Button
             className="text-sm"
-            onClick={() => router.push(`/${companySlug}/edit`)}
+            onClick={() => router.push(`/${companySlug}/edit-company`)}
           >
             Back to edit
           </Button>

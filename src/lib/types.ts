@@ -92,3 +92,10 @@ export type CompanyCareerType = {
   published_brand_color: string | null;
   jobs_count: number;
 };
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  company_slug: string;
+}

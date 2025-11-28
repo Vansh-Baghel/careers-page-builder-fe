@@ -1,19 +1,19 @@
 "use client";
 
 import { deleteJob, getJobs, getPublishedCompanyData } from "@/lib/apis";
-import { AllJobs, Job, JobFiltersType } from "@/lib/types";
+import { Job, JobFiltersType } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { JobCard } from "./jobCard";
-import { JobFilters } from "./jobFilters";
+import { DeleteJobDialog } from "../../modals/deleteJobModal";
+import { Button } from "../../ui/button";
+import { JobCard } from "../reusableComponents/jobCard";
+import { JobFilters } from "../jobFilters";
+import Pagination from "../reusableComponents/pagination";
 import { PreviewView } from "./previewView";
-import { DeleteJobDialog } from "../modals/deleteJobModal";
-import Pagination from "./pagination";
 
-export default function PublishPageContent() {
+export default function EditJobsContent() {
   const { companySlug } = useParams<{ companySlug: string }>();
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -100,22 +100,21 @@ export default function PublishPageContent() {
 
   return (
     <main className="space-y-6">
-      <h1 className="text-2xl font-semibold">Publish</h1>
+      <h1 className="text-2xl font-semibold">Jobs</h1>
 
-      <PreviewView
-        company={publishedCompanyData}
-        isLoading={loadingPublishedData}
-      />
+      <div className="flex justify-between items-center">
+        <JobFilters onFilter={handleFilter} />
 
-      <div className="flex justify-end">
-        <Button onClick={() => router.push(`/${companySlug}/publish/add-job`)}>
-          Add Job
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            onClick={() => router.push(`/${companySlug}/add-job`)}
+          >
+            Add Job
+          </Button>
+        </div>
       </div>
 
-      <JobFilters onFilter={handleFilter} />
-
-      {(isLoading || isFetching) ? (
+      {isLoading || isFetching ? (
         <p>Loading jobs...</p>
       ) : filteredJobs.length === 0 ? (
         <p>No jobs found.</p>
@@ -127,7 +126,7 @@ export default function PublishPageContent() {
               job={job}
               onDelete={() => handleDeleteOnClickHandler(job.job_slug)}
               onEdit={() =>
-                router.push(`/${companySlug}/publish/edit/${job.job_slug}`)
+                router.push(`/${companySlug}/edit-job/${job.job_slug}`)
               }
             />
           ))}

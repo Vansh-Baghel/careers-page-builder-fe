@@ -35,7 +35,7 @@ export function LoginForm() {
       const { token, user } = res.data;
       saveToLocalStorage("token", token);
       saveToLocalStorage("user", JSON.stringify(user));
-      router.push(`/${user.company_slug}/edit`);
+      router.push(`/${user.company_slug}/edit-company`);
     },
     onError: () => {
       toast.error("Failed to log in");

@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
+import { Button } from "../../../ui/button";
+import { Input } from "../../../ui/input";
+import { Label } from "../../../ui/label";
 import {
   Select,
   SelectContent,
@@ -94,8 +94,8 @@ export function JobForm({
             <SelectValue placeholder="Select employment type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="full-time">Full-time</SelectItem>
-            <SelectItem value="part-time">Part-time</SelectItem>
+            <SelectItem value="full_time">Full-time</SelectItem>
+            <SelectItem value="part_time">Part-time</SelectItem>
             <SelectItem value="contract">Contract</SelectItem>
           </SelectContent>
         </Select>

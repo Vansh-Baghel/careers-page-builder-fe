@@ -1,7 +1,7 @@
 "use client";
 
 import { BrandEditor } from "@/components/brand/brandEditor";
-import { SectionsEditor } from "@/components/company/sectionsEditor";
+import { SectionsEditor } from "@/components/company/protected/sectionsEditor";
 import { Button } from "@/components/ui/button";
 import { getPreview, saveCompanyPreview } from "@/lib/apis";
 import { CompanySection } from "@/lib/types";

@@ -1,24 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getCurrentUser, logout } from "@/lib/auth";
+import { logout } from "@/lib/auth";
+import { toast } from "sonner";
+import { User } from "@/lib/types";
 
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const params = useParams();
+  const [user, setUser] = useState<User | null>(null);
 
+  // 🔥 1. Read user from localStorage when navbar mounts or pathname changes
   useEffect(() => {
-    getCurrentUser();
-  }, []);
+    try {
+      const raw = localStorage.getItem("user");
+      setUser(raw ? JSON.parse(raw) : null);
+    } catch {
+      setUser(null);
+    }
+  }, [pathname]); // reruns whenever URL changes → ensures updated user
 
-  console.log("🚀 ~ Navbar ~ user:", user);
+  // 🔥 2. Protect /edit-company routes if slug doesn't match
+  useEffect(() => {
+    if (!user) return;
+    if (!params?.companySlug) return;
+
+    if (params.companySlug !== user.company_slug) {
+      toast.error("You cannot access another company's dashboard.");
+      router.push(`/${user.company_slug}/edit-company`);
+    }
+  }, [user, params, router]);
 
   const handleLogout = () => {
-    logout(); // clear cookie/localStorage
+    logout();
+    localStorage.removeItem("user");
     setUser(null);
     router.push("/login");
   };
@@ -38,11 +57,11 @@ export function Navbar() {
 
         {user && (
           <>
-            <Link href={`/${user.company_slug}/publish`}>
+            <Link href={`/${user.company_slug}/edit-jobs`}>
               <Button
-                variant={pathname.includes("publish") ? "default" : "outline"}
+                variant={pathname.includes("edit-jobs") ? "default" : "outline"}
               >
-                Publish
+                Edit Jobs
               </Button>
             </Link>
 
@@ -52,7 +71,7 @@ export function Navbar() {
                   pathname.includes("edit-company") ? "default" : "outline"
                 }
               >
-                Edit Company
+                Edit Page
               </Button>
             </Link>
 

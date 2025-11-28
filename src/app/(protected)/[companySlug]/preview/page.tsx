@@ -1,5 +1,5 @@
-import PreviewPageContent from "@/components/company/previewPageContent";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import PreviewPageContent from "@/components/company/protected/previewPageContent";
+import ProtectedRoute from "@/components/wrapper/ProtectedRoute";
 
 export default function PreviewPage() {
   return (

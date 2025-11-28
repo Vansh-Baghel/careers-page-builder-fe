@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import QueryProvider from "../components/providers/query-provider";
 import "./globals.css";
-import { Navbar } from "@/components/layout/navbar";
+import { Navbar } from "@/components/navbar";
 
 export const metadata: Metadata = {
   title: "Careers Page Builder",

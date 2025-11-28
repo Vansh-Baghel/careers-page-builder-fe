@@ -11,7 +11,6 @@ export default function Home() {
     queryKey: ["all-companies"],
     queryFn: () => getAllCompanies().then((res) => res.data),
   });
-  console.log("🚀 ~ Home ~ companies:", companies)
 
   if (isLoading) {
     return <main className="p-6">Loading companies...</main>;

@@ -13,7 +13,7 @@ import { getJobs } from "@/lib/apis";
 import { Job } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import Pagination from "./pagination";
+import Pagination from "../reusableComponents/pagination";
 
 type Props = {
   companySlug: string;
@@ -91,8 +91,8 @@ export function CareersJobsList({ companySlug }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="full-time">Full-time</SelectItem>
-            <SelectItem value="part-time">Part-time</SelectItem>
+            <SelectItem value="full_time">Full-time</SelectItem>
+            <SelectItem value="part_time">Part-time</SelectItem>
             <SelectItem value="internship">Internship</SelectItem>
           </SelectContent>
         </Select>

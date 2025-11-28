@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { CareersJobsList } from "@/components/company/careersJobsList";
+import { CareersJobsList } from "@/components/company/protected/careersJobsList";
 import { getPublishedCompanyData } from "@/lib/apis";
 import { PublishCareersSections } from "./publishCareersSections";
 
-export default function PublishCareersContainer() {
+export default function CompanyPublishedPage() {
   const { companySlug } = useParams<{ companySlug: string }>();
 
   const fetchPublicCompany = async () => {

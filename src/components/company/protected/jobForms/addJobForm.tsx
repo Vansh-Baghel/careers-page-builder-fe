@@ -29,7 +29,7 @@ export function AddJobForm() {
     mutationFn: createJob,
     onSuccess: () => {
       toast.success("Job added");
-      router.push(`/${companySlug}/publish`);
+      router.push(`/${companySlug}/edit-jobs`);
       router.refresh();
     },
     onError: () => toast.error("Failed to add job"),

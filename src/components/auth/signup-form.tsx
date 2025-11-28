@@ -36,7 +36,7 @@ export function SignupForm() {
       
       toast.success("Account created!");
 
-      router.push(`/${user.company_slug}/edit`);
+      router.push(`/${user.company_slug}/edit-company`);
     },
     onError: () => {
       toast.error("Failed to sign up");

@@ -44,7 +44,7 @@ export function EditJobForm() {
     mutationFn: editJob,
     onSuccess: () => {
       toast.success("Job updated");
-      router.push(`/${companySlug}/publish`);
+      router.push(`/${companySlug}/edit-jobs`);
       router.refresh();
     },
     onError: () => toast.error("Failed to update job"),
