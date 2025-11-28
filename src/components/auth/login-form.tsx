@@ -51,11 +51,11 @@ export function LoginForm() {
     >
       <div>
         <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register("email")} />
+        <Input id="email" type="email" {...register("email")} className="mt-2" />
       </div>
       <div>
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register("password")} />
+        <Input id="password" type="password" {...register("password")} className="mt-2" />
       </div>
       <Button
         type="submit"

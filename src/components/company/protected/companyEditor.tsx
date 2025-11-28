@@ -15,9 +15,6 @@ export default function CompanyEditor() {
   const router = useRouter();
   const [sections, setSections] = useState<CompanySection[]>([]);
 
-  const [logoUploaded, setLogoUploaded] = useState(false);
-  const [bannerUploaded, setBannerUploaded] = useState(false);
-
   const [brand, setBrand] = useState({
     logo_url: "",
     logo_public_id: "",

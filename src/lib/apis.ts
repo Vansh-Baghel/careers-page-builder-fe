@@ -1,5 +1,5 @@
 import axios from "@/lib/axios";
-import { CompanyPublic, CompanySection, Job } from "./types";
+import { CompanySection } from "./types";
 
 export const signUp = ({
   name,

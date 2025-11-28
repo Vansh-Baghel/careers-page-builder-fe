@@ -10,94 +10,103 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getJobs } from "@/lib/apis";
-import { Job } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import Pagination from "../reusableComponents/pagination";
+import { Job, JobFiltersType } from "@/lib/types";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useMemo, useRef, useEffect, useState } from "react";
+import { JobFilters } from "../jobFilters";
 
 type Props = {
   companySlug: string;
 };
 
 export function CareersJobsList({ companySlug }: Props) {
-  const [search, setSearch] = useState("");
-  const [location, setLocation] = useState<string>("all");
-  const [employmentType, setEmploymentType] = useState<string>("all");
-
-  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<JobFiltersType>({
+    search: "",
+    location: "all",
+    employment_type: "all",
+    experience_level: "all",
+    work_policy: "all",
+    job_type: "all",
+  });
   const limit = 10;
 
-  // ---------- FETCH PAGINATED JOBS ----------
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-jobs", companySlug, page, limit],
-    queryFn: () => getJobs(companySlug, page, limit).then((res) => res.data),
-  });
+  // ---------- Infinite Query ----------
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["public-jobs-infinite", companySlug],
+      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        getJobs(companySlug, pageParam, limit).then((res) => res.data),
+      getNextPageParam: (lastPage) => lastPage.pagination.nextPage,
+    });
 
-  const jobs = useMemo(() => {
-    return data?.jobs || [];
+  // ---------- Flatten all loaded pages ----------
+  const allJobs: Job[] = useMemo(() => {
+    return data?.pages.flatMap((p: { jobs: Job[] }) => p.jobs) ?? [];
   }, [data]);
 
-  // ---------- UNIQUE LOCATIONS ----------
-  const uniqueLocations = useMemo(() => {
-    return [
-      "all",
-      ...Array.from(new Set(jobs.map((j: Job) => j.location))),
-    ] as string[];
-  }, [jobs]);
-
-  // ---------- FILTERING ----------
+  // ---------- Filtering ----------
   const filtered = useMemo(() => {
-    return jobs.filter((job: Job) => {
-      if (search && !job.title.toLowerCase().includes(search.toLowerCase())) {
+    return allJobs.filter((job) => {
+      if (
+        filters.search &&
+        !job.title.toLowerCase().includes(filters.search.toLowerCase())
+      )
         return false;
-      }
-      if (location !== "all" && job.location !== location) return false;
-      if (employmentType !== "all" && job.employment_type !== employmentType)
+
+      if (filters.location !== "all" && job.location !== filters.location)
+        return false;
+
+      if (
+        filters.employment_type !== "all" &&
+        job.employment_type !== filters.employment_type
+      )
+        return false;
+
+      if (
+        filters.experience_level !== "all" &&
+        job.experience_level !== filters.experience_level
+      )
+        return false;
+
+      if (
+        filters.work_policy !== "all" &&
+        job.work_policy !== filters.work_policy
+      )
+        return false;
+
+      if (filters.job_type !== "all" && job.job_type !== filters.job_type)
         return false;
 
       return true;
     });
-  }, [jobs, search, location, employmentType]);
+  }, [allJobs, filters]);
 
-  if (isLoading) return <p>Loading jobs...</p>;
+  // ---------- Infinite Scroll Observer ----------
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage]);
 
   return (
     <section className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <Input
-          placeholder="Search by job title"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="md:flex-1"
-        />
+      <JobFilters filters={filters} onChange={setFilters} jobs={allJobs} />
 
-        <Select value={location} onValueChange={setLocation}>
-          <SelectTrigger className="w-full md:w-48">
-            <SelectValue placeholder="Location" />
-          </SelectTrigger>
-          <SelectContent>
-            {uniqueLocations.map((loc) => (
-              <SelectItem key={loc} value={loc}>
-                {loc === "all" ? "All locations" : loc}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={employmentType} onValueChange={setEmploymentType}>
-          <SelectTrigger className="w-full md:w-48">
-            <SelectValue placeholder="Employment type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="full_time">Full-time</SelectItem>
-            <SelectItem value="part_time">Part-time</SelectItem>
-            <SelectItem value="internship">Internship</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
+      {/* Job List */}
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No jobs match your filters.
@@ -123,14 +132,14 @@ export function CareersJobsList({ companySlug }: Props) {
         </div>
       )}
 
-      {/* Pagination */}
-      {data && data.pagination.totalPages > 1 && (
-        <Pagination
-          currentPage={data.pagination.currentPage}
-          totalPages={data.pagination.totalPages}
-          onPageChange={setPage}
-        />
-      )}
+      {/* Infinite Scroll Trigger */}
+      <div ref={loadMoreRef} className="h-12 flex items-center justify-center">
+        {isFetchingNextPage
+          ? "Loading more jobs..."
+          : hasNextPage
+          ? "Scroll to load more"
+          : "No more jobs"}
+      </div>
     </section>
   );
 }

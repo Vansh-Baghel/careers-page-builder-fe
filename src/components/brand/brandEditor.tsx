@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/lib/types";
 import { uploadToCloudinary } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -25,6 +25,9 @@ function UploadedTick({ ok }: { ok: boolean }) {
 export function BrandEditor({ brand, onChange }: Props) {
   const { companySlug } = useParams() as { companySlug: string };
 
+  const [logoUploadLoader, setLogoUploadLoader] = useState(false);
+  const [bannerUploadLoader, setBannerUploadLoader] = useState(false);
+
   const setValue = (field: keyof Brand, value: string) => {
     onChange({ [field]: value });
   };
@@ -32,7 +35,13 @@ export function BrandEditor({ brand, onChange }: Props) {
   const handleUpload = async (field: keyof Brand, file?: File) => {
     if (!file) return;
 
+    // pick correct loader setter
+    const setLoader =
+      field === "logo_url" ? setLogoUploadLoader : setBannerUploadLoader;
+
     try {
+      setLoader(true);
+
       const { url, public_id } = await uploadToCloudinary(
         file,
         companySlug,
@@ -49,18 +58,18 @@ export function BrandEditor({ brand, onChange }: Props) {
       toast.success("Uploaded");
     } catch {
       toast.error("Upload failed");
+    } finally {
+      setLoader(false);
     }
   };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border p-5 rounded-lg bg-white shadow-sm">
-      
       {/* Logo */}
       <div className="space-y-2">
         <Label className="font-medium">Logo</Label>
 
         <div className="flex items-center gap-2">
-          {/* Hidden input */}
           <input
             id="logo-upload"
             type="file"
@@ -69,12 +78,19 @@ export function BrandEditor({ brand, onChange }: Props) {
             onChange={(e) => handleUpload("logo_url", e.target.files?.[0])}
           />
 
-          {/* Custom button */}
           <label
             htmlFor="logo-upload"
-            className="cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50"
+            className={`cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm flex items-center gap-2 ${
+              logoUploadLoader ? "opacity-60 pointer-events-none" : ""
+            }`}
           >
-            {brand.logo_url ? "File uploaded" : "Upload Logo"}
+            {logoUploadLoader && <Loader2 size={16} className="animate-spin" />}
+
+            {!logoUploadLoader
+              ? brand.logo_url
+                ? "File uploaded"
+                : "Upload Logo"
+              : "Uploading..."}
           </label>
 
           <UploadedTick ok={!!brand.logo_url} />
@@ -96,9 +112,19 @@ export function BrandEditor({ brand, onChange }: Props) {
 
           <label
             htmlFor="banner-upload"
-            className="cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm hover:bg-gray-50"
+            className={`cursor-pointer border rounded-md px-3 py-2 text-sm bg-white shadow-sm flex items-center gap-2 ${
+              bannerUploadLoader ? "opacity-60 pointer-events-none" : ""
+            }`}
           >
-            {brand.banner_url ? "File uploaded" : "Upload Banner"}
+            {bannerUploadLoader && (
+              <Loader2 size={16} className="animate-spin" />
+            )}
+
+            {!bannerUploadLoader
+              ? brand.banner_url
+                ? "File uploaded"
+                : "Upload Banner"
+              : "Uploading..."}
           </label>
 
           <UploadedTick ok={!!brand.banner_url} />

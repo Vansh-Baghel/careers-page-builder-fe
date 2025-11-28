@@ -33,34 +33,37 @@ export function SignupForm() {
 
       saveToLocalStorage("token", token);
       saveToLocalStorage("user", JSON.stringify(user));
-      
+
       toast.success("Account created!");
 
       router.push(`/${user.company_slug}/edit-company`);
     },
-    onError: () => {
-      toast.error("Failed to sign up");
-    },
+    onError: () => toast.error("Failed to sign up"),
   });
 
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<SignupFormValues>({ resolver: zodResolver(schema) });
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(schema),
+  });
 
-  const onSubmit = async (data: SignupFormValues) => {
-    mutate(data);
-  };
+  const onSubmit = (data: SignupFormValues) => mutate(data);
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 max-w-md mx-auto"
+      className="space-y-4 max-w-md mx-auto w-full px-4 sm:px-6 md:px-0"
     >
       <div>
         <Label htmlFor="name">Full Name</Label>
-        <Input id="name" {...register("name")} placeholder="John Doe" />
+        <Input
+          id="name"
+          {...register("name")}
+          placeholder="John Doe"
+          className="w-full mt-2"
+        />
       </div>
 
       <div>
@@ -70,6 +73,7 @@ export function SignupForm() {
           type="email"
           {...register("email")}
           placeholder="you@company.com"
+          className="w-full mt-2"
         />
       </div>
 
@@ -80,6 +84,7 @@ export function SignupForm() {
           type="password"
           {...register("password")}
           placeholder="••••••••"
+          className="w-full mt-2"
         />
       </div>
 
@@ -89,6 +94,7 @@ export function SignupForm() {
           id="company_name"
           {...register("company_name")}
           placeholder="Acme Corp"
+          className="w-full mt-2"
         />
       </div>
 
@@ -98,8 +104,9 @@ export function SignupForm() {
           id="company_slug"
           {...register("company_slug")}
           placeholder="my-company"
+          className="w-full mt-2"
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground mt-1">
           This will be used in your company page URL. Leave blank to
           auto-generate.
         </p>
@@ -108,7 +115,7 @@ export function SignupForm() {
       <Button
         type="submit"
         disabled={isSubmitting || isPending}
-        className="w-full"
+        className="w-full mt-2"
       >
         {isSubmitting || isPending ? "Creating account..." : "Sign Up"}
       </Button>

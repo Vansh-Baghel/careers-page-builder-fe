@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { logout } from "@/lib/auth";
 import { toast } from "sonner";
 import { User } from "@/lib/types";
+import { Menu, X } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -14,7 +15,9 @@ export function Navbar() {
   const params = useParams();
   const [user, setUser] = useState<User | null>(null);
 
-  // 🔥 1. Read user from localStorage when navbar mounts or pathname changes
+  // Mobile menu
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("user");
@@ -22,12 +25,16 @@ export function Navbar() {
     } catch {
       setUser(null);
     }
-  }, [pathname]); // reruns whenever URL changes → ensures updated user
+  }, [pathname]);
 
-  // 🔥 2. Protect /edit-company routes if slug doesn't match
   useEffect(() => {
     if (!user) return;
     if (!params?.companySlug) return;
+
+    // Only protect edit pages
+    const isProtected =
+      pathname.includes("/edit-company") || pathname.includes("/edit-jobs");
+    if (!isProtected) return;
 
     if (params.companySlug !== user.company_slug) {
       toast.error("You cannot access another company's dashboard.");
@@ -48,7 +55,17 @@ export function Navbar() {
         Careers
       </Link>
 
-      <div className="flex items-center gap-4">
+      {/* Mobile menu toggle */}
+      <button
+        className="md:hidden"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label="Toggle Menu"
+      >
+        {open ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Desktop items */}
+      <div className="hidden md:flex items-center gap-4">
         {!user && (
           <Button onClick={() => router.push("/login")} variant="default">
             Login
@@ -81,6 +98,58 @@ export function Navbar() {
           </>
         )}
       </div>
+
+      {/* Mobile dropdown */}
+      {open && (
+        <div className="absolute top-16 z-10 right-4 w-48 rounded-lg shadow-md bg-white border p-4 flex flex-col gap-3 md:hidden">
+          {!user && (
+            <Button
+              onClick={() => {
+                setOpen(false);
+                router.push("/login");
+              }}
+            >
+              Login
+            </Button>
+          )}
+
+          {user && (
+            <>
+              <Button
+                variant={pathname.includes("edit-jobs") ? "default" : "outline"}
+                onClick={() => {
+                  setOpen(false);
+                  router.push(`/${user.company_slug}/edit-jobs`);
+                }}
+              >
+                Edit Jobs
+              </Button>
+
+              <Button
+                variant={
+                  pathname.includes("edit-company") ? "default" : "outline"
+                }
+                onClick={() => {
+                  setOpen(false);
+                  router.push(`/${user.company_slug}/edit-company`);
+                }}
+              >
+                Edit Page
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

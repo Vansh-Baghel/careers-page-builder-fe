@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function LoginPage() {
   return (
     <main className="py-10">
-      <h1 className="text-2xl font-semibold mb-6">Recruiter Login</h1>
+      <h1 className="text-2xl text-center font-semibold mb-6">Recruiter Login</h1>
 
       <LoginForm />
 

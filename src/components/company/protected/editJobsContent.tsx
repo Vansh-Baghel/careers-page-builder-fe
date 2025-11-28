@@ -19,15 +19,16 @@ export default function EditJobsContent() {
   const { companySlug } = useParams<{ companySlug: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  const limit = 10;
-
   const [filters, setFilters] = useState<JobFiltersType>({
+    search: "",
+    location: "all",
     employment_type: "all",
     experience_level: "all",
     work_policy: "all",
     job_type: "all",
   });
+  const limit = 10;
+
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     jobSlug: "",
@@ -53,6 +54,15 @@ export default function EditJobsContent() {
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job: Job) => {
       if (
+        filters.search &&
+        !job.title.toLowerCase().includes(filters.search.toLowerCase())
+      )
+        return false;
+
+      if (filters.location !== "all" && job.location !== filters.location)
+        return false;
+
+      if (
         filters.employment_type !== "all" &&
         job.employment_type !== filters.employment_type
       )
@@ -64,13 +74,13 @@ export default function EditJobsContent() {
       )
         return false;
 
-      if (filters.job_type !== "all" && job.job_type !== filters.job_type)
-        return false;
-
       if (
         filters.work_policy !== "all" &&
         job.work_policy !== filters.work_policy
       )
+        return false;
+
+      if (filters.job_type !== "all" && job.job_type !== filters.job_type)
         return false;
 
       return true;
@@ -123,15 +133,13 @@ export default function EditJobsContent() {
 
   return (
     <main className="space-y-6">
-      <h1 className="text-2xl font-semibold">Jobs</h1>
+      <h1 className="text-2xl font-semibold">Jobs at {companySlug.slice(0, 1).toUpperCase().concat(companySlug.slice(1))}</h1>
 
-      <div className="flex justify-between items-center">
-        <JobFilters filters={filters} onChange={setFilters} />
+      <JobFilters filters={filters} onChange={setFilters} jobs={allJobs} />
 
-        <Button onClick={() => router.push(`/${companySlug}/add-job`)}>
-          Add Job
-        </Button>
-      </div>
+      <Button onClick={() => router.push(`/${companySlug}/add-job`)}>
+        Add Job
+      </Button>
 
       {/* Job List */}
       {filteredJobs.length === 0 ? (

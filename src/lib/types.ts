@@ -81,6 +81,8 @@ export type JobFiltersType = {
   experience_level?: ExperienceLevel;
   work_policy?: WorkPolicy;
   job_type?: JobType;
+  search: string,
+  location: string,
 };
 
 export type CompanyCareerType = {
